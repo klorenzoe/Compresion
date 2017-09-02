@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+
 
 namespace Huffman
 {
@@ -6,7 +8,11 @@ namespace Huffman
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            string pathOrigin = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\ImageFile.jpg";
+
+            StreamReader OriginFile = new StreamReader(File.Open(pathOrigin, FileMode.Open));
+
+            HuffmanTree.Compressor(OriginFile, pathOrigin);
         }
     }
 }
