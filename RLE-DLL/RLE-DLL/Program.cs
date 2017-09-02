@@ -10,6 +10,10 @@ namespace RLE_DLL
     {
         static void Main(string[] args)
         {
+            Run_Length run = new Run_Length();
+            string cadena = "BBBBBBBBBBBBNBBBBBBBBBBBBNNNBBBBBBBBBBBBBBBBBBBBBBBBNBBBBBBBBBBBB";
+            string compresion = Encoding.ASCII.GetString(run.RunLenght(cadena));
+            Console.ReadKey();
         }
     }
 }
