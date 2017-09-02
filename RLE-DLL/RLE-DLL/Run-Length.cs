@@ -8,12 +8,22 @@ namespace RLE_DLL
 {
     class Run_Length
     {
-        /// Esta solucion de visual es solo para probar la DLL
-        /// Aqui trabajaremos la compresion RLE o Run-Length, es una aplicacion
-        /// de consola pues es mas facil depurar el codigo.
-        /// La aplicacion real la creará Kathy en la que ella trabajara
-        /// Esta clase luego la copiaremos a una solucion de biblioteca de clases o DLL
-        /// 
+        public string RunLenght(byte[] entrada)
+        {
+            string compresion = "";
+            int repeticiones;
+            for(int i = 0; i < entrada.Length; i++)
+            {
+                repeticiones = 1;
+                while (entrada[i + 1] == entrada[i])
+                {
+                    i++;
+                    repeticiones++;
+                }
+                compresion += repeticiones + entrada[i];
+            }
+            return compresion;
+        }
 
     }
 }
