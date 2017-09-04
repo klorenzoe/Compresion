@@ -9,11 +9,11 @@ namespace Huffman
     {
         static void Main(string[] args)
         {
-            string pathOrigin = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\txtFile.txt";
-            StreamReader OriginFile = new StreamReader(File.Open(pathOrigin, FileMode.Open));
+            string pathOrigin = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\descarga.txt";
+            StreamReader OriginFile = new StreamReader(File.Open(pathOrigin, FileMode.Open), Encoding.GetEncoding("ANSI"));
             HuffmanTree.Compressor(OriginFile, pathOrigin);
 
-            string pathToDescompress = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\COMPRIMIDO txtFile.txt";
+            string pathToDescompress = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\COMPRIMIDO descarga.txt";
             HuffmanTree.Descompressor(pathToDescompress);
         }
     }
