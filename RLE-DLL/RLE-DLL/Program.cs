@@ -14,7 +14,7 @@ namespace RLE_DLL
         {
             Run_Length compresor = new Run_Length();
 
-            string comp = compresor.Comprimir("test.txt");
+            compresor.Comprimir("test.txt");
             string value = compresor.Descomprimir("test.comp");
             Console.WriteLine(value);
             Console.ReadLine();
