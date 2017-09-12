@@ -32,11 +32,18 @@ namespace RLE_DLL
             string texto = "";
             foreach (var item in ReadCompFile(path) )
             {
-                string letra = item[item.Length - 1].ToString();
-                int repeticiones = int.Parse(item);
-                for (int i = 0; i < repeticiones; i++)
+                if (item != null)
                 {
-                    texto += letra;
+                    string letra = item[item.Length - 1].ToString();
+                    int repeticiones = int.Parse(item.Remove(item.Length - 1).ToString());
+                    for (int i = 0; i < repeticiones; i++)
+                    {
+                        texto += letra;
+                    }
+                }
+                else
+                {
+                    break;
                 }
             }
             return texto;
@@ -69,9 +76,7 @@ namespace RLE_DLL
                     {
                         if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
                         {
-                            int count = reader.ReadInt32();
-                            string data = reader.ReadString();
-                            yield return count.ToString() + data;
+                            yield return reader.ReadInt32() + reader.ReadChar().ToString();
                         }
                     }
                 }
