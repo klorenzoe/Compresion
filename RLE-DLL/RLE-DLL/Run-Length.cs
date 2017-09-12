@@ -11,10 +11,9 @@ namespace RLE_DLL
     {
         private static string ENCODE = "iso-8859-1";
 
-        public string Comprimir(string path)
+        public void Comprimir(string path)
         {
             string archivo = ReadFile(path);
-            string compresion = "";
             int repeticiones;
             for (int i = 0; i < archivo.Length - 1; i++) 
             {
@@ -24,10 +23,8 @@ namespace RLE_DLL
                     i++;
                     repeticiones++;
                 }
-                compresion += repeticiones.ToString() + archivo[i];
-                WriteFile("test.comp", repeticiones.ToString() + archivo[i]);
+                WriteFile("test.comp", repeticiones, archivo[i]);
             }
-            return compresion;
        }
         
         public string Descomprimir(string path)
@@ -80,13 +77,14 @@ namespace RLE_DLL
             yield return null;
         }
 
-        private void WriteFile(string name, string cadena)
+        private void WriteFile(string name, int count, char value)
         {
             using (var file = new FileStream(name, FileMode.Append))
             {
                 using (var writer = new BinaryWriter(file, Encoding.GetEncoding(ENCODE)))
                 {
-                    writer.Write(cadena);
+                    writer.Write(count);
+                    writer.Write(value);
                 }
             }
         }
