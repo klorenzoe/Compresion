@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.IO;
 namespace RLE_DLL
 {
     class Program
     {
+        
+
         static void Main(string[] args)
         {
-            Run_Length run = new Run_Length();
-            string cadena = "ÁÁÁÁÁÁÁÁÁÁÁÁÁNBBBBBBBBBBBBNNNBBBBBBBBBBBBBBBBBBBBBBBBNBBBBBBBBBBBB";
-            byte[]  compresion = run.Comprimir(cadena);
-            string cadena2 = run.Descomprimir(compresion);
-            Console.WriteLine(cadena.CompareTo(cadena2));
-            Console.ReadKey();
+            Run_Length compresor = new Run_Length();
+
+            string comp = compresor.Comprimir("test.txt");
+            string value = compresor.Descomprimir("test.comp");
+            Console.WriteLine(value);
+            Console.ReadLine();
         }
     }
 }

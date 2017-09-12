@@ -3,57 +3,92 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace RLE_DLL
 {
     class Run_Length
     {
-        private const string ENCODE = "iso-8859-1";
-        public byte[] Comprimir(string archivo)
+        private static string ENCODE = "iso-8859-1";
+
+        public string Comprimir(string path)
         {
-            byte[] entrada = Encoding.GetEncoding(ENCODE).GetBytes(archivo + " ");
+            string archivo = ReadFile(path);
             string compresion = "";
             int repeticiones;
-            for (int i = 0; i < entrada.Length - 1; i++) 
+            for (int i = 0; i < archivo.Length - 1; i++) 
             {
                 repeticiones = 1;
-                while (entrada[i + 1] == entrada[i] && i != entrada.Length - 1)  
+                while (i != archivo.Length - 1 && archivo[i + 1] == archivo[i])  
                 {
                     i++;
                     repeticiones++;
                 }
-                compresion += repeticiones +" "+entrada[i]+" ";
+                compresion += repeticiones.ToString() + archivo[i];
+                WriteFile("test.comp", repeticiones.ToString() + archivo[i]);
             }
-            return Encoding.ASCII.GetBytes(compresion);
-        }
+            return compresion;
+       }
         
-        public string Descomprimir(byte[] archivo)
+        public string Descomprimir(string path)
         {
-            byte[] data = ASCII_TO_ISO_ARRAY(archivo);
             string texto = "";
-            for (int i = 0; i < data.Length - 1; i += 2)
+            foreach (var item in ReadCompFile(path) )
             {
-                byte[] value = { data[i + 1] };
-                for (int j = 0; j < (char)data[i]; j++)
+                string letra = item[item.Length - 1].ToString();
+                int repeticiones = int.Parse(item.Remove(item.Length - 1));
+                for (int i = 0; i < repeticiones; i++)
                 {
-                    texto += Encoding.GetEncoding(ENCODE).GetString(value);
+                    texto += letra;
                 }
             }
             return texto;
         }
         
-        private byte[] ASCII_TO_ISO_ARRAY(byte[] archivo)
+    
+        private string ReadFile(string path)
         {
-            var data = Encoding.ASCII.GetString(archivo).Split(' ');
-            List<byte> values = new List<byte>();
-            foreach(string value in data)
+            string line = "";
+            using (var file = new FileStream(path, FileMode.Open))
             {
-                if (value != "")
+                using (var reader = new BinaryReader(file))
                 {
-                    values.Add(byte.Parse(value));
+                    for (int i = 0; i < reader.BaseStream.Length; i++)
+                    {
+                        line += Convert.ToChar(reader.ReadByte());
+                    }
                 }
             }
-            return values.ToArray();
+            return line;
+        }
+
+        private IEnumerable<string> ReadCompFile(string path)
+        {
+            using (var file = new FileStream(path, FileMode.Open))
+            {
+                using (var reader = new BinaryReader(file, Encoding.GetEncoding(ENCODE)))
+                {
+                    for (int i = 0; i < reader.BaseStream.Length; i++)
+                    {
+                        if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
+                        {
+                            yield return  reader.ReadString();
+                        }
+                    }
+                }
+            }
+            yield return null;
+        }
+
+        private void WriteFile(string name, string cadena)
+        {
+            using (var file = new FileStream(name, FileMode.Append))
+            {
+                using (var writer = new BinaryWriter(file, Encoding.GetEncoding(ENCODE)))
+                {
+                    writer.Write(cadena);
+                }
+            }
         }
 
     }
