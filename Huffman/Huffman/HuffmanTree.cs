@@ -7,6 +7,7 @@ namespace Huffman
 {
     static class HuffmanTree
     {
+        static Encoding ExperimentalEncoding = UTF8Encoding.UTF8;
         //------------- Compress zone
 
         /// <summary>
@@ -16,13 +17,17 @@ namespace Huffman
         /// <param name="Originalfile"></param>
         /// <param name="TotalElements"></param>
         /// <returns></returns>
-        private static Dictionary<string, int> SymbolsAndOcurrences(StreamReader Originalfile, ref float TotalElements)
+        private static Dictionary<string, int> SymbolsAndOcurrences(/*BinaryReader*/StreamReader Originalfile, ref float TotalElements/*, ref string Compressed*/)
         {
             Dictionary<string, int> Ocurrences = new Dictionary<string, int>();
+            Ocurrences.Add("\n", 0);
+            Ocurrences.Add("\r", 0);
             string line = "";
 
             while ((line = Originalfile.ReadLine()) != null)
             {
+                Ocurrences["\n"]++;
+                Ocurrences["\r"]++;
                 for (int i = 0; i < line.Length; i++)
                 {
                     try
@@ -36,6 +41,21 @@ namespace Huffman
                     TotalElements++;
                 }
             }
+            //char Character;
+            //while (Originalfile.BaseStream.Position!=Originalfile.BaseStream.Length)
+            //{
+            //    Character = Convert.ToChar(Originalfile.ReadByte());
+            //    Compressed += Character.ToString();
+            //    try
+            //    {
+            //        Ocurrences[Character.ToString()]++;
+            //    }
+            //    catch
+            //    {
+            //        Ocurrences.Add(Character.ToString(), 1);
+            //    }
+            //    TotalElements++;
+            //}
 
             return Ocurrences;
         }
@@ -46,11 +66,11 @@ namespace Huffman
         /// </summary>
         /// <param name="OriginalFile"></param>
         /// <returns></returns>
-        private static List<Node> OccurrencePercentage(StreamReader OriginalFile)
+        private static List<Node> OccurrencePercentage(/*BinaryReader*/StreamReader OriginalFile/*, ref string Compressed*/)
         {
             List<Node> PercentageList = new List<Node>();
             float TotalElements = 0f;
-            Dictionary<string, int> Ocurrences = SymbolsAndOcurrences(OriginalFile, ref TotalElements);
+            Dictionary<string, int> Ocurrences = SymbolsAndOcurrences(OriginalFile, ref TotalElements/*, ref Compressed*/);
 
             foreach (KeyValuePair<string, int> Symbol in Ocurrences)
             {
@@ -112,7 +132,7 @@ namespace Huffman
         /// </summary>
         /// <param name="Current"></param>
         /// <param name="ResultEncoding"></param>
-        private static void AddCodeToTree(ref Node Current, ref Dictionary<string, Node> ResultEncoding, ref string SpaceCode)
+        private static void AddCodeToTree(ref Node Current, ref Dictionary<string, string> ResultEncoding)
         {
             Node Temporal;
             if (Current.Father == null)
@@ -129,21 +149,18 @@ namespace Huffman
 
             if (Current.Element != null)
             {
-                if (Current.Element == " ")
-                    SpaceCode = Current.Code;
+                if (Current.Element==",")
+                ResultEncoding.Add("coma", Current.Code);
                 else
-                    if (Current.Element==",")
-                    ResultEncoding.Add("coma", Current);
-                    else
-                    ResultEncoding.Add(Current.Element, Current);
+                ResultEncoding.Add(Current.Element, Current.Code);
             }
 
             if (Current.SonLeft != null && Current.SonRight != null)
             {
                 Temporal = Current.SonLeft;
-                AddCodeToTree(ref Temporal, ref ResultEncoding, ref SpaceCode); //To the left
+                AddCodeToTree(ref Temporal, ref ResultEncoding); //To the left
                 Temporal = Current.SonRight;
-                AddCodeToTree(ref Temporal, ref ResultEncoding, ref SpaceCode);//To the right
+                AddCodeToTree(ref Temporal, ref ResultEncoding);//To the right
             }
         }
 
@@ -154,13 +171,13 @@ namespace Huffman
         /// </summary>
         /// <param name="OriginalFile"></param>
         /// <returns></returns>
-        private static Dictionary<string, Node> HuffmanEncoding(StreamReader OriginalFile, ref string SpaceCode)
+        private static Dictionary<string, string> HuffmanEncoding(/*BinaryReader*/StreamReader OriginalFile/*, ref string Compressed*/)
         {
-            Dictionary<string, Node> ResultEncoding = new Dictionary<string, Node>();
-            List<Node> NodesList = OccurrencePercentage(OriginalFile);
+            Dictionary<string, string> ResultEncoding = new Dictionary<string, string>();
+            List<Node> NodesList = OccurrencePercentage(OriginalFile/*, ref Compressed*/);
             Node Root = HuffmanTreeRecursive(NodesList);
 
-            AddCodeToTree(ref Root, ref ResultEncoding, ref SpaceCode);
+            AddCodeToTree(ref Root, ref ResultEncoding);
 
             return ResultEncoding;
         }
@@ -171,26 +188,48 @@ namespace Huffman
         /// </summary>
         /// <param name="Compressed"></param>
         /// <param name="PathDestination"></param>
-        private static void CreateCompressedFile(string Compressed, string PathDestination, string EncodingTable)
+        private static void CreateCompressedFile(string Compressed, string PathDestination, string/*Dictionary<string, string>*/ EncodingTable)
         {
-            PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1], "COMPRIMIDO " + EncodingTable.Split('\n')[0].Split(',')[1]);
+            PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1], "COMPRIMIDO " + /*EncodingTable["Huffman"]*/EncodingTable.Split('\n')[0].Split(',')[1]);
             Directory.CreateDirectory(PathDestination);
 
             if (File.Exists(PathDestination))
             {
                 File.Delete(PathDestination);
             }
+           // Compressed = EncodingTable + "\n" + Compressed;
 
-            using (FileStream CompressedFile = File.Create(PathDestination + "\\" + EncodingTable.Split('\n')[0].Split(',')[1].Split('.')[0] + ".comp"))
+            using (FileStream CompressedFile = File.Create(PathDestination + "\\" + EncodingTable.Split('\n')[0].Split(',')[1].Split('.')[0]/* EncodingTable["Huffman"]*/+ ".comp"))
             {
-                Byte[] info = new UTF8Encoding(true).GetBytes(Compressed);
-                CompressedFile.Write(info, 0, info.Length);
-            }
+                using (BinaryWriter CompressedFileBinary = new BinaryWriter(CompressedFile, Encoding.ASCII))
+                {
+                    //foreach (KeyValuePair<string, string> Element in EncodingTable)
+                    //{
+                    //    if (Element.Key == "Huffman")
+                    //    {
+                    //        CompressedFileBinary.Write(Element.Key + ",");
+                    //        CompressedFileBinary.Write(Element.Value+",");
+                    //    }
+                    //    else
+                    //    {
+                    //        CompressedFileBinary.Write(Element.Value + ",");
+                    //        char c = Convert.ToChar(Element.Key.Replace("\\u",""));
+                    //        //char c = (char)int.Parse(Element.Key);
+                    //        string m = c.ToString();
+                    //        CompressedFileBinary.Write(Convert.ToByte(Convert.ToChar(Element.Key).ToString(), 2));
+                    //        CompressedFileBinary.Write(",");
+                    //    }
+                    //}
+                    //CompressedFileBinary.Write(Convert.ToByte("\r", 2));
 
-            using (FileStream CompressedFile = File.Create(PathDestination + "\\EncodingTable.comp"))
-            {
-                Byte[] info = new UTF8Encoding(true).GetBytes(EncodingTable);
-                CompressedFile.Write(info, 0, info.Length);
+                    CompressedFileBinary.Write(EncodingTable);
+                    while (8 < Compressed.Length)
+                    {
+                        CompressedFileBinary.Write(Convert.ToByte(Compressed.Substring(0, 8), 2));
+                        Compressed = Compressed.Remove(0, 8);
+                    }
+                    CompressedFileBinary.Write(Convert.ToByte(Compressed, 2));
+                }
             }
         }
 
@@ -198,85 +237,72 @@ namespace Huffman
         /// This method is the only one public (for the compressor). This manages the others methods for the compression.
         /// </summary>
         /// <param name="OriginalFile"></param>
-        /// <param name="PathDestination"></param>
-        public static void Compressor(StreamReader OriginalFile, string PathDestination)
+        /// <param name="DestinyPath"></param>
+        public static void Compressor(string DestinyPath)
         {
-            string SpaceCode = "";
-            Dictionary<string, Node> ResultEncoding = HuffmanEncoding(OriginalFile, ref SpaceCode);
+            StreamReader OriginFile = new StreamReader(File.Open(DestinyPath, FileMode.Open));
+            //string Compressed="";
+            //BinaryReader OriginFile = new BinaryReader(File.Open(DestinyPath, FileMode.Open));
+            Dictionary<string, string> ResultEncoding = HuffmanEncoding(OriginFile/*, ref Compressed*/);
 
-            OriginalFile.BaseStream.Seek(0, SeekOrigin.Begin);
+            string EncodingTable = "Huffman," + DestinyPath.Split('\\')[DestinyPath.Split('\\').Length - 1] + ","; //It concat the original name, with the key "Huffman"
+            //ResultEncoding.Add("Huffman", DestinyPath.Split('\\')[DestinyPath.Split('\\').Length - 1]);
+            OriginFile.BaseStream.Seek(0, SeekOrigin.Begin);
+            string Compressed = OriginFile.ReadToEnd().Replace("1","").Replace("0","");
 
-            string Compressed = OriginalFile.ReadToEnd();
-
-            Compressed = Compressed.Replace(" ", SpaceCode);
-            foreach (KeyValuePair<string, Node> Element in ResultEncoding)
+            foreach (KeyValuePair<string, string> Element in ResultEncoding)
             {
-                if(Element.Key=="coma")
-                Compressed = Compressed.Replace(","," "+Element.Value.Code+" ");
+                EncodingTable += Element.Value + "," + Element.Key + ",";
+
+                if (Element.Key=="coma")
+                    Compressed = Compressed.Replace(",",Element.Value);
                 else
-                Compressed = Compressed.Replace(Element.Key, " " + Element.Value.Code + " ");
+                    Compressed = Compressed.Replace(Element.Key,Element.Value);
             }
-            
-            string EncodingTable = "Huffman,"+PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1] + "\n";
-            EncodingTable += SpaceCode + ", \n";
-            foreach (KeyValuePair<string, Node> Encoding in ResultEncoding)
-            {
-                EncodingTable +=Encoding.Value.Code + "," + Encoding.Key + "\n";
-            }
-            CreateCompressedFile(Compressed, PathDestination, EncodingTable);
-
+            CreateCompressedFile(Compressed, DestinyPath, /*ResultEncoding*/EncodingTable.Remove(EncodingTable.Length - 1, 1)+"-----");
         }
 
 
         //------------- Descompress zone 
         
         /// <summary>
-        /// This method helps to insert sorted for the length, It is useful for the create the encoding table
-        /// </summary>
-        /// <param name="TableElement"></param>
-        /// <param name="EncodingTable"></param>
-        private static void InsertForLength(string TableElement, ref List<string> EncodingTable)
-        {
-            if(EncodingTable.Count == 0)
-            {
-                EncodingTable.Add(TableElement);
-            }
-            else
-            {
-                int index = 0;
-                while (TableElement.Split(',')[0].Length < EncodingTable[index].Split(',')[0].Length)
-                {
-                    index++;
-                    if (index == EncodingTable.Count)
-                        break;
-                }
-                if (index == EncodingTable.Count)
-                    EncodingTable.Add(TableElement);// insert in final
-                else
-                    EncodingTable.Insert(index, TableElement); //insert in index
-            }
-        }
-       
-        /// <summary>
-        /// This method returns the Encoding table in a Sorted list. This information it get it of the
+        /// This method returns the Encoding table in a Dictionary. This information it get it of the
         /// compress directory.
         /// </summary>
         /// <param name="PathEncodingTable"></param>
         /// <returns></returns>
-        private static List<string> CodesDictionary(string PathEncodingTable)
+        private static Dictionary<string,string> CodesDictionary(BinaryReader Reader, ref int Seek, ref string OriginalName)
         {
-            StreamReader OriginFile = new StreamReader(File.Open(PathEncodingTable, FileMode.Open));
-            List<string> EncodingTable = new List<string>();
+            Dictionary<string, string> CodesTable = new Dictionary<string, string>();
 
-            string Line = "";
-            while ((Line = OriginFile.ReadLine())!=null)
+            string FirstLine = "";
+
+            while (true)
             {
-                InsertForLength(Line, ref EncodingTable);
+                //FirstLine+= Convert.ToChar(Reader.ReadByte()).ToString();
+                FirstLine += Reader.ReadChar().ToString();
+                if (FirstLine.Contains("-----"))
+                    break;
+            }
+            //FirstLine = FirstLine.Split('\r')[0].Remove(FirstLine.Split('\r')[0].Length - 1, 1);
+
+            Seek = FirstLine.Length;
+            FirstLine = FirstLine.Replace("-----", "");
+            
+            string[] MessyCodes = FirstLine.Split(',');
+
+            OriginalName = MessyCodes[1];
+            for (int i = 2; i < MessyCodes.Length; i+=2)
+            {
+               if(MessyCodes[i+1]=="coma")
+                     CodesTable.Add(MessyCodes[i],",");
+               else
+                    CodesTable.Add(MessyCodes[i], MessyCodes[i + 1]);
             }
 
-            return EncodingTable;
+            return CodesTable;
         }
-
+        
         /// <summary>
         /// this method replaces the code with the real symbol, and return the decoded.
         /// </summary>
@@ -285,26 +311,33 @@ namespace Huffman
         /// <returns></returns>
         private static string DecodeTheFile(string PathCompress, string PathEncodingTable, ref string OriginalName)
         {
-            StreamReader OriginFile = new StreamReader(File.Open(PathCompress, FileMode.Open));
-            List<string> EncodingTable = CodesDictionary(PathEncodingTable);
-            string Descompressor = OriginFile.ReadToEnd();
-
-            foreach (string code in EncodingTable)
+            string Descompressor = "";
+            int Seek=0;
+            using (BinaryReader DescompressFile = new BinaryReader(new FileStream(PathCompress, FileMode.Open), Encoding.ASCII))
             {
-                if (code.Split(',')[0] == "Huffman")
+                Dictionary<string, string> TableCodes = CodesDictionary(DescompressFile, ref Seek, ref OriginalName);
+                DescompressFile.BaseStream.Position = Seek;
+
+                char CharCode;
+                string BitToBit = "", segment="";
+
+                while (DescompressFile.BaseStream.Position != DescompressFile.BaseStream.Length)
                 {
-                   OriginalName = code.Split(',')[1];
+                    CharCode = Convert.ToChar(DescompressFile.ReadByte());
+                    BitToBit = Convert.ToString(CharCode, 2).PadLeft(8, '0');
+
+                    for (int i = 0; i < BitToBit.Length; i++)
+                    {
+                        segment += BitToBit[i].ToString();
+                        if (TableCodes.ContainsKey(segment))
+                        {
+                            Descompressor += TableCodes[segment];
+                            segment = "";
+                        }
+
+                    }
                 }
-                else
-                {
-                    if(code.Split(',')[1]==" ")
-                        Descompressor= Descompressor.Replace(code.Split(',')[0], code.Split(',')[1]);
-                    else
-                        if(code.Split(',')[1] == "coma")
-                            Descompressor = Descompressor.Replace(" " + code.Split(',')[0] + " ", ",");
-                        else
-                            Descompressor = Descompressor.Replace(" "+code.Split(',')[0]+" ", code.Split(',')[1]);
-                }
+
             }
             return Descompressor;
         }
