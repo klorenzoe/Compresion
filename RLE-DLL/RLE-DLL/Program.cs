@@ -13,10 +13,8 @@ namespace RLE_DLL
         static void Main(string[] args)
         {
             Run_Length compresor = new Run_Length();
-
-            compresor.Comprimir("test.png");
-            string value = compresor.Descomprimir("test.comp");
-            Console.WriteLine(value);
+            Console.WriteLine(compresor.Comprimir("archivos/test.png"));
+            Console.WriteLine(compresor.Descomprimir("archivos/test.png.rlex"));
             Console.ReadLine();
         }
     }

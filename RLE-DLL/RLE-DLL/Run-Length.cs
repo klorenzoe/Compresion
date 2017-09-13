@@ -9,57 +9,85 @@ namespace RLE_DLL
 {
     class Run_Length
     {
-        private static string ENCODE = "iso-8859-1";
-
-        public void Comprimir(string path)
+        private Encoding ENCODE = Encoding.GetEncoding("iso-8859-1");
+        private const string EXTENSION = ".rlex";
+        public string Comprimir(string path)
         {
-            string archivo = ReadFile(path);
-            int repeticiones;
-            for (int i = 0; i < archivo.Length - 1; i++) 
+            string archivo;
+            try
             {
-                repeticiones = 1;
-                while (i != archivo.Length - 1 && archivo[i + 1] == archivo[i])  
-                {
-                    i++;
-                    repeticiones++;
-                }
-                WriteFile("test.comp", repeticiones, archivo[i]);
+                archivo = ReadFile(path);
             }
+            catch (FileNotFoundException ex)
+            {
+                return ex.Message;
+            }
+            try
+            {
+                int repeticiones;
+                for (int i = 0; i < archivo.Length - 1; i++)
+                {
+                    repeticiones = 1;
+                    while (i != archivo.Length - 1 && archivo[i + 1] == archivo[i])
+                    {
+                        i++;
+                        repeticiones++;
+                    }
+                    try
+                    {
+                        WriteCompFile(path + EXTENSION, repeticiones, archivo[i]);
+                    }
+                    catch (FileNotFoundException ex)
+                    {
+                        return ex.Message;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return "Se ha producido un error: " + ex.Message;
+            }
+            return "Compresión completa en archivo: " + path + EXTENSION;
        }
         
         public string Descomprimir(string path)
         {
-            string texto = "";
-            foreach (var item in ReadCompFile(path) )
+            try
             {
-                if (item != null)
+                foreach (var item in ReadCompFile(path))
                 {
-                    string letra = item[item.Length - 1].ToString();
-                    int repeticiones = int.Parse(item.Remove(item.Length - 1).ToString());
-                    for (int i = 0; i < repeticiones; i++)
+                    if (item != null)
                     {
-                        texto += letra;
+                        string letra = item[item.Length - 1].ToString();
+                        int repeticiones = int.Parse(item.Remove(item.Length - 1).ToString());
+                        for (int i = 0; i < repeticiones; i++)
+                        {
+                            WriteFile(path.Replace(".rlex", ""), letra);
+                        }
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
-                else
-                {
-                    break;
-                }
+                return "Descompresión completa en archivo: " + path.Replace(".rlex", "");
             }
-            return texto;
+            catch (Exception ex)
+            {
+                return "Se ha producido un error: " + ex.Message;
+            }
         }
-        
-    
+
         private string ReadFile(string path)
         {
             string line = "";
             using (var file = new FileStream(path, FileMode.Open))
             {
-                using (var reader = new BinaryReader(file))
+                using (var reader = new BinaryReader(file, ENCODE))
                 {
                     for (int i = 0; i < reader.BaseStream.Length; i++)
                     {
-                        line += Convert.ToChar(reader.ReadByte());
+                        line += reader.ReadChar();
                     }
                 }
             }
@@ -70,7 +98,7 @@ namespace RLE_DLL
         {
             using (var file = new FileStream(path, FileMode.Open))
             {
-                using (var reader = new BinaryReader(file, Encoding.GetEncoding(ENCODE)))
+                using (var reader = new BinaryReader(file, ENCODE))
                 {
                     for (int i = 0; i < reader.BaseStream.Length; i++)
                     {
@@ -84,11 +112,22 @@ namespace RLE_DLL
             yield return null;
         }
 
-        private void WriteFile(string name, int count, char value)
+        private void WriteFile(string name, string data)
         {
             using (var file = new FileStream(name, FileMode.Append))
             {
-                using (var writer = new BinaryWriter(file, Encoding.GetEncoding(ENCODE)))
+                using (var writer = new StreamWriter(file, ENCODE))
+                {
+                    writer.Write(data);
+                }
+            }
+        }
+
+        private void WriteCompFile(string name, int count, char value)
+        {
+            using (var file = new FileStream(name, FileMode.Append))
+            {
+                using (var writer = new BinaryWriter(file, ENCODE))
                 {
                     writer.Write(count);
                     writer.Write(value);
