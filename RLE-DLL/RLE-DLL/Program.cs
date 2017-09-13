@@ -22,7 +22,6 @@ namespace RLE_DLL
     //	-LEER INSTRUCCIONES
     //	-INTERFAZ
 
-
     class Program
     {
         static void Main(string[] args)
