@@ -96,5 +96,10 @@ namespace RLE_DLL
             }
         }
 
+        private void Stadistics(string cPath, string dPath)
+        {
+
+        }
+
     }
 }
