@@ -17,36 +17,12 @@ namespace Huffman
         /// <param name="Originalfile"></param>
         /// <param name="TotalElements"></param>
         /// <returns></returns>
-        private static Dictionary<char, int> SymbolsAndOcurrences(BinaryReader/*StreamReader*/ Originalfile, ref float TotalElements, ref string Compressed)
+        private static Dictionary<char, int> SymbolsAndOcurrences(BinaryReader Originalfile, ref float TotalElements, ref string Compressed)
         {
             Dictionary<char, int> Ocurrences = new Dictionary<char, int>();
-            //Ocurrences.Add("\n", 0);
-            //Ocurrences.Add("\r", 0);
-            //string line = "";
-
-            //while ((line = Originalfile.ReadLine()) != null)
-            //{
-            //    Ocurrences["\n"]++;
-            //    Ocurrences["\r"]++;
-            //    for (int i = 0; i < line.Length; i++)
-            //    {
-            //        try
-            //        {
-            //            Ocurrences[line[i].ToString()]++;
-            //        }
-            //        catch
-            //        {
-            //            Ocurrences.Add(line[i].ToString(), 1);
-            //        }
-            //        TotalElements++;
-            //    }
-            //}
             char Character;
             while (Originalfile.BaseStream.Position != Originalfile.BaseStream.Length)
             {
-                //Character = Convert.ToChar(Originalfile.ReadByte());
-                // Compressed += Character.ToString();
-                
                 Character = Convert.ToChar(Originalfile.ReadByte());
                 Compressed += Character;
 
@@ -205,36 +181,13 @@ namespace Huffman
             {
                 File.Delete(PathDestination);
             }
-           // Compressed = EncodingTable + "\n" + Compressed;
 
             using (FileStream CompressedFile = File.Create(PathDestination + "\\" + EncodingTable.Split(new[] { "||" }, StringSplitOptions.None)[1].Split('.')[0]/* EncodingTable["Huffman"]*/+ ".comp"))
             {
                 using (BinaryWriter CompressedFileBinary = new BinaryWriter(CompressedFile, Encoding.ASCII))
                 {
-                    //foreach (KeyValuePair<string, string> Element in EncodingTable)
-                    //{
-                    //    if (Element.Key == "Huffman")
-                    //    {
-                    //        CompressedFileBinary.Write(Element.Key + ",");
-                    //        CompressedFileBinary.Write(Element.Value+",");
-                    //    }
-                    //    else
-                    //    {
-                    //        CompressedFileBinary.Write(Element.Value + ",");
-                    //        char c = Convert.ToChar(Element.Key.Replace("\\u",""));
-                    //        //char c = (char)int.Parse(Element.Key);
-                    //        string m = c.ToString();
-                    //        CompressedFileBinary.Write(Convert.ToByte(Convert.ToChar(Element.Key).ToString(), 2));
-                    //        CompressedFileBinary.Write(",");
-                    //    }
-                    //}
-                    //CompressedFileBinary.Write(Convert.ToByte("\r", 2));
                     for (int i = 0; i < EncodingTable.Length; i++)
                     {
-                        //char c = EncodingTable[i];
-                        //Convert.ToString(EncodingTable[i], 2);
-                        //byte b = Convert.ToByte();
-                        //CompressedFileBinary.Write(EncodingTable[i]);
                         char c = EncodingTable[i];
                         string m = Convert.ToString(c,2);
                         CompressedFileBinary.Write(Convert.ToByte(m, 2));
@@ -257,32 +210,18 @@ namespace Huffman
         /// <param name="DestinyPath"></param>
         public static void Compressor(string DestinyPath)
         {
-            //StreamReader OriginFile = new StreamReader(File.Open(DestinyPath, FileMode.Open));
-            //string Compressed="";
             BinaryReader OriginFile = new BinaryReader(File.Open(DestinyPath, FileMode.Open));
             string TextToCompress = ""; /*OriginFile.ReadToEnd();*/
             Dictionary<char, string> ResultEncoding = HuffmanEncoding(OriginFile, ref TextToCompress);
 
             string EncodingTable = "";
             
-            //ResultEncoding.Add("Huffman", DestinyPath.Split('\\')[DestinyPath.Split('\\').Length - 1]);
             OriginFile.BaseStream.Seek(0, SeekOrigin.Begin);
-            //string TextToCompress = OriginFile.ReadToEnd();
 
             foreach (KeyValuePair<char, string> Element in ResultEncoding)
             {
                 EncodingTable += Element.Value + "||" + Element.Key + "||";
             }
-
-            //foreach (KeyValuePair<string, string> Element in ResultEncoding)
-            //{
-            //    EncodingTable += Element.Value + "," + Element.Key + ",";
-
-            //    if (Element.Key=="coma")
-            //        Compressed = Compressed.Replace(",",Element.Value);
-            //    else
-            //        Compressed = Compressed.Replace(Element.Key,Element.Value);
-            //}
             string Compressed = "";
             for (int i = 0; i < TextToCompress.Length; i++)
             {
@@ -312,13 +251,10 @@ namespace Huffman
 
             while (true)
             {
-                //FirstLine+= Convert.ToChar(Reader.ReadByte()).ToString();
                 FirstLine += Convert.ToChar(Reader.ReadByte()).ToString();
                 if (FirstLine.Contains(">>"))
                     break;
             }
-            //FirstLine = FirstLine.Split('\r')[0].Remove(FirstLine.Split('\r')[0].Length - 1, 1);
-
             Seek = FirstLine.Length;
             FirstLine = FirstLine.Replace(">>", "");
 
@@ -396,7 +332,6 @@ namespace Huffman
         /// <param name="OriginalName"></param>
         private static void CreateDecodeFile(string DescompressContent, string DirectoryPath, string OriginalName)
         {
-            //DirectoryPath = DirectoryPath.Replace(DirectoryPath.Split('\\')[DirectoryPath.Split('\\').Length-1],OriginalName);
             DirectoryPath += "\\"+OriginalName;
             if (File.Exists(DirectoryPath))
             {
@@ -405,9 +340,7 @@ namespace Huffman
 
             using (FileStream DescompressedFile = File.Create(DirectoryPath))
             {
-                Encoding ThisEncoding = Encoding.GetEncoding("iso-8859-1");
-                //Byte[] info = new UTF8Encoding(true).GetBytes(DescompressContent);
-                Byte[] info = ThisEncoding.GetBytes(DescompressContent);
+                Byte[] info = Encoding.GetEncoding("iso-8859-1").GetBytes(DescompressContent);
                 DescompressedFile.Write(info, 0, info.Length);
             }
         }
