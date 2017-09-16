@@ -11,6 +11,7 @@ namespace RLE_DLL
     {
         private Encoding ENCODE = Encoding.GetEncoding("iso-8859-1");
         private const string EXTENSION = ".rlex";
+
         public string Comprimir(string path)
         {
             string archivo;
@@ -104,12 +105,48 @@ namespace RLE_DLL
                     {
                         if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
                         {
-                            yield return reader.ReadInt32() + reader.ReadChar().ToString();
+                            yield return (int)(reader.ReadChar()) + reader.ReadChar().ToString();
                         }
                     }
                 }
             }
             yield return null;
+        }
+
+        public double RazonCompresion(string PathOriginalFile, string PathCompFile)
+        {
+            try
+            {
+                using (var OriginalFile = new BinaryReader((new FileStream(PathOriginalFile, FileMode.Open)), ENCODE))
+                {
+                    using (var CompFile = new BinaryReader((new FileStream(PathCompFile, FileMode.Open)), ENCODE))
+                    {
+                        return CompFile.BaseStream.Length / OriginalFile.BaseStream.Length;
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public double FactorCompresion(string PathOriginalFile, string PathCompFile)
+        {
+            try
+            {
+                using (var OriginalFile = new BinaryReader((new FileStream(PathOriginalFile, FileMode.Open)), ENCODE))
+                {
+                    using (var CompFile = new BinaryReader((new FileStream(PathCompFile, FileMode.Open)), ENCODE))
+                    {
+                        return OriginalFile.BaseStream.Length / CompFile.BaseStream.Length;
+                    }
+                }
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         private void WriteFile(string name, string data)
@@ -129,7 +166,12 @@ namespace RLE_DLL
             {
                 using (var writer = new BinaryWriter(file, ENCODE))
                 {
-                    writer.Write(count);
+                    for (int i = 0; i < count / 255; i++)
+                    {
+                        writer.Write((char)255);
+                        writer.Write(value);
+                    }
+                    writer.Write((char)(count % 255));
                     writer.Write(value);
                 }
             }
