@@ -9,11 +9,16 @@ namespace Huffman
     {
         static void Main(string[] args)
         {
-            string pathOrigin = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\descarga.txt";
-            StreamReader OriginFile = new StreamReader(File.Open(pathOrigin, FileMode.Open), Encoding.GetEncoding("ANSI"));
-            HuffmanTree.Compressor(OriginFile, pathOrigin);
 
-            string pathToDescompress = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\COMPRIMIDO descarga.txt";
+            //Para probarlo solo es de cambiarle la dirección: "@"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\txtFile.txt"
+            //a la dirección donde esta el archivo a probar
+            string pathOrigin = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\pdf.pdf";
+            
+            HuffmanTree.Compressor(pathOrigin);
+
+
+            //Acá es necesario Copiar la dirección del Path Origin, y antes del nombre del archivo escribirle "COMPRIMIDO "
+            string pathToDescompress = @"C:\Users\Krle__000\Desktop\ARCHIVOS PRUEBA\COMPRIMIDO pdf.pdf";
             HuffmanTree.Descompressor(pathToDescompress);
         }
     }
