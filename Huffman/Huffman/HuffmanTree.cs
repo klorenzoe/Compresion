@@ -172,8 +172,9 @@ namespace Huffman
         /// </summary>
         /// <param name="Compressed"></param>
         /// <param name="PathDestination"></param>
-        private static void CreateCompressedFile(string Compressed, string PathDestination, string/*Dictionary<string, string>*/ EncodingTable)
+        private static int CreateCompressedFile(string Compressed, string PathDestination, string/*Dictionary<string, string>*/ EncodingTable)
         {
+            int length = Compressed.Length/8 + EncodingTable.Length;
             PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1], "COMPRIMIDO " + /*EncodingTable["Huffman"]*/EncodingTable.Split(new[] { "||" }, StringSplitOptions.None)[1]);
             Directory.CreateDirectory(PathDestination);
 
@@ -201,6 +202,7 @@ namespace Huffman
                     CompressedFileBinary.Write(Convert.ToByte(Compressed, 2));
                 }
             }
+            return length;
         }
 
         /// <summary>
@@ -208,7 +210,7 @@ namespace Huffman
         /// </summary>
         /// <param name="OriginalFile"></param>
         /// <param name="DestinyPath"></param>
-        public static void Compressor(string DestinyPath)
+        public static int Compressor(string DestinyPath)
         {
             BinaryReader OriginFile = new BinaryReader(File.Open(DestinyPath, FileMode.Open));
             string TextToCompress = ""; /*OriginFile.ReadToEnd();*/
@@ -231,7 +233,7 @@ namespace Huffman
             EncodingTable = "length||"+ Compressed.Length+"||" + EncodingTable;
             EncodingTable = "Huffman||" + DestinyPath.Split('\\')[DestinyPath.Split('\\').Length - 1] + "||"+EncodingTable; //It concat the original name, with the key "Huffman"
 
-            CreateCompressedFile(Compressed, DestinyPath, /*ResultEncoding*/EncodingTable.Remove(EncodingTable.Length - 2, 2)+">>");
+            return CreateCompressedFile(Compressed, DestinyPath, /*ResultEncoding*/EncodingTable.Remove(EncodingTable.Length - 2, 2)+">>");
         }
 
 
@@ -330,7 +332,7 @@ namespace Huffman
         /// <param name="DescompressContent"></param>
         /// <param name="DirectoryPath"></param>
         /// <param name="OriginalName"></param>
-        private static void CreateDecodeFile(string DescompressContent, string DirectoryPath, string OriginalName)
+        private static int CreateDecodeFile(string DescompressContent, string DirectoryPath, string OriginalName)
         {
             DirectoryPath += "\\"+OriginalName;
             if (File.Exists(DirectoryPath))
@@ -343,13 +345,14 @@ namespace Huffman
                 Byte[] info = Encoding.GetEncoding("iso-8859-1").GetBytes(DescompressContent);
                 DescompressedFile.Write(info, 0, info.Length);
             }
+            return DescompressContent.Length;
         }
 
         /// <summary>
         /// This method manages the others methods for the descompressor, is the only one public (for the descompressor)
         /// </summary>
         /// <param name="PathCompresorFile"></param>
-        public static void Descompressor(string PathCompresorFile)
+        public static int Descompressor(string PathCompresorFile)
         {
             DirectoryInfo DirectoryToDescompress = new DirectoryInfo(PathCompresorFile);
             string PathCompress = "";
@@ -368,8 +371,11 @@ namespace Huffman
                 }
             }
 
-            CreateDecodeFile(DecodeTheFile(PathCompress, PathEncodingTable, ref OriginalName), PathCompresorFile, OriginalName);
+            //It returns the Decompressed length
+            return CreateDecodeFile(DecodeTheFile(PathCompress, PathEncodingTable, ref OriginalName), PathCompresorFile, OriginalName);
         }
+        
+
     }
 
 
