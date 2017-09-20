@@ -26,24 +26,27 @@ namespace RLE_DLL
     {
         static void Main(string[] args)
         {
-            string[] entrada = Console.ReadLine().Split(' ');
-            int current = CaracterValido(0, entrada);
-            switch (entrada[current])
+            while (true)
             {
-                case "-c":
-                    Comprimir(entrada[CaracterValido(current + 1, entrada)]);
-                    break;
-                case "-d":
-                    Descomprimir(entrada[CaracterValido(current + 1, entrada)]);
-                    break;
-                case "--ayuda":
-                    Console.WriteLine("Comprimir -c\nDscomprimir -d\nRuta de archivo -f\nAyuda --ayuda");
-                    break;
-                default:
-                    Console.WriteLine("Comando no válido.\nEscriba --ayuda para obtener ayuda");
-                    break;
+                Console.Write("Compresión RLE > ");
+                string[] entrada = Console.ReadLine().Split(' ');
+                int current = CaracterValido(0, entrada);
+                switch (entrada[current])
+                {
+                    case "-c":
+                        Comprimir(entrada[CaracterValido(current + 1, entrada)]);
+                        break;
+                    case "-d":
+                        Descomprimir(entrada[CaracterValido(current + 1, entrada)]);
+                        break;
+                    case "--ayuda":
+                        Console.WriteLine("Comprimir -c\nDscomprimir -d\nRuta de archivo -f\nAyuda --ayuda");
+                        break;
+                    default:
+                        Console.WriteLine("Comando no válido.\nEscriba --ayuda para obtener ayuda");
+                        break;
+                }
             }
-            Console.ReadKey();
         }
 
         static public int CaracterValido(int posicion, string[] entrada)
@@ -66,7 +69,7 @@ namespace RLE_DLL
             }
                 
             current = CaracterValido(current, comando);
-            run.Comprimir(comando[current]);
+            Console.WriteLine(run.Comprimir(comando[current]));
         }
 
         static public void Descomprimir(string entrada)
@@ -82,7 +85,7 @@ namespace RLE_DLL
             }
 
             current = CaracterValido(current, comando);
-            run.Descomprimir(comando[current]);
+            Console.WriteLine(run.Descomprimir(comando[current]));
         }
     }
 }

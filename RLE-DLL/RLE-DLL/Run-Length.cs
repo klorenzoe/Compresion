@@ -14,6 +14,7 @@ namespace RLE_DLL
 
         public string Comprimir(string path)
         {
+            path = FixPath(path);
             string archivo;
             try
             {
@@ -25,6 +26,7 @@ namespace RLE_DLL
             }
             try
             {
+                SetMark(path + EXTENSION);
                 int repeticiones;
                 for (int i = 0; i < archivo.Length - 1; i++)
                 {
@@ -48,23 +50,19 @@ namespace RLE_DLL
             {
                 return "Se ha producido un error: " + ex.Message;
             }
-            return "Compresión completa en archivo: " + path + EXTENSION;
+            return "Compresión completa en archivo: " + path + EXTENSION + "\n" + Stats(path, path +EXTENSION);
        }
         
         public string Descomprimir(string path)
         {
+            path = FixPath(path);
             try
             {
                 foreach (var item in ReadCompFile(path))
                 {
                     if (item != null)
                     {
-                        string letra = item[item.Length - 1].ToString();
-                        int repeticiones = int.Parse(item.Remove(item.Length - 1).ToString());
-                        for (int i = 0; i < repeticiones; i++)
-                        {
-                            WriteFile(path.Replace(".rlex", ""), letra);
-                        }
+                        WriteFile(path.Replace(".rlex", ""), new string(item[item.Length - 1], int.Parse(item.Remove(item.Length - 1).ToString())));
                     }
                     else
                     {
@@ -78,9 +76,19 @@ namespace RLE_DLL
                 return "Se ha producido un error: " + ex.Message;
             }
         }
+        
+        private string FixPath(string path)
+        {
+            if (path != null)
+            {
+                return path.Replace('/', '\\');
+            }
+            return null;
+        }
 
         private string ReadFile(string path)
         {
+            path = FixPath(path);
             string line = "";
             using (var file = new FileStream(path, FileMode.Open))
             {
@@ -97,15 +105,23 @@ namespace RLE_DLL
 
         private IEnumerable<string> ReadCompFile(string path)
         {
+            path = FixPath(path);
             using (var file = new FileStream(path, FileMode.Open))
             {
                 using (var reader = new BinaryReader(file, ENCODE))
                 {
-                    for (int i = 0; i < reader.BaseStream.Length; i++)
+                    if (reader.ReadChar() == 'R' && reader.ReadChar() == 'L')
                     {
-                        if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
+                        for (int i = 0; i < reader.BaseStream.Length; i++)
                         {
-                            yield return (int)(reader.ReadChar()) + reader.ReadChar().ToString();
+                            if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
+                            {
+                                yield return (int)(reader.ReadChar()) + reader.ReadChar().ToString();
+                                if ((Convert.ToDouble(reader.BaseStream.Position) / Convert.ToDouble(reader.BaseStream.Length) * 100) % 10 == 0)
+                                {
+                                    Console.WriteLine("- " + (Convert.ToDouble(reader.BaseStream.Position) / Convert.ToDouble(reader.BaseStream.Length ))* 100 + "%");
+                                }
+                            }
                         }
                     }
                 }
@@ -113,42 +129,27 @@ namespace RLE_DLL
             yield return null;
         }
 
-        public double RazonCompresion(string PathOriginalFile, string PathCompFile)
+        private string Stats(string PathOriginalFile, string PathCompFile)
         {
+            PathOriginalFile = FixPath(PathOriginalFile);
+            PathCompFile = FixPath(PathCompFile);
             try
             {
                 using (var OriginalFile = new BinaryReader((new FileStream(PathOriginalFile, FileMode.Open)), ENCODE))
                 {
                     using (var CompFile = new BinaryReader((new FileStream(PathCompFile, FileMode.Open)), ENCODE))
                     {
-                        return CompFile.BaseStream.Length / OriginalFile.BaseStream.Length;
+                        double before = OriginalFile.BaseStream.Length;
+                        double after = CompFile.BaseStream.Length;
+                        return "Razón de compresión: " + Math.Round( after/ before,2) + "\nFactor de Compresión: " + Math.Round(before /after, 2) + "\nCompresión total: " + Math.Round((1 - after / before) * 100, 2)+ "%";
                     }
                 }
             }
             catch
             {
-                return 0;
+                return "";
             }
         }
-
-        public double FactorCompresion(string PathOriginalFile, string PathCompFile)
-        {
-            try
-            {
-                using (var OriginalFile = new BinaryReader((new FileStream(PathOriginalFile, FileMode.Open)), ENCODE))
-                {
-                    using (var CompFile = new BinaryReader((new FileStream(PathCompFile, FileMode.Open)), ENCODE))
-                    {
-                        return OriginalFile.BaseStream.Length / CompFile.BaseStream.Length;
-                    }
-                }
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
         private void WriteFile(string name, string data)
         {
             using (var file = new FileStream(name, FileMode.Append))
@@ -177,8 +178,16 @@ namespace RLE_DLL
             }
         }
 
-        private void Stadistics(string cPath, string dPath)
+        private void SetMark(string name)
         {
+            using (var file = new FileStream(name, FileMode.Append))
+            {
+                using (var writer = new BinaryWriter(file, ENCODE))
+                {
+                    writer.Write('R');
+                    writer.Write('L');
+                }
+            }
         }
 
     }
