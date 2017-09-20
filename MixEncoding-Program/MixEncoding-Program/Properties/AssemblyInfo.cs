@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // La información general de un ensamblado se controla mediante el siguiente 
 // conjunto de atributos. Cambie estos valores de atributo para modificar la información
 // asociada con un ensamblado.
-[assembly: AssemblyTitle("RunLengthEnconding-Program")]
+[assembly: AssemblyTitle("MixEncoding-Program")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RunLengthEnconding-Program")]
+[assembly: AssemblyProduct("MixEncoding-Program")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // El siguiente GUID sirve como id. de typelib si este proyecto se expone a COM.
-[assembly: Guid("9a849705-bc82-436d-a98e-8561a433c63a")]
+[assembly: Guid("e89e6cf0-be0f-4078-a4a9-0d29e9520153")]
 
 // La información de versión de un ensamblado consta de los cuatro valores siguientes:
 //

@@ -9,7 +9,8 @@ namespace RunLengthEncoding
     public class RLE
     {
         private Encoding ENCODE = Encoding.GetEncoding("iso-8859-1");
-        private const string EXTENSION = ".rlex";
+        private const string EXTENSION = ".comp";
+        private string NAME = "";
 
         public string Comprimir(string path)
         {
@@ -25,7 +26,7 @@ namespace RunLengthEncoding
             }
             try
             {
-                SetMark(path + EXTENSION);
+                SetMark(path);
                 int repeticiones;
                 for (int i = 0; i < archivo.Length - 1; i++)
                 {
@@ -59,9 +60,13 @@ namespace RunLengthEncoding
             {
                 foreach (var item in ReadCompFile(path))
                 {
+                    var name = path.Split('\\');
+                    name[name.Length - 1] = NAME;
+                    path = string.Join("\\", name);
+
                     if (item != null)
                     {
-                        WriteFile(path.Replace(".rlex", ""), new string(item[item.Length - 1], int.Parse(item.Remove(item.Length - 1).ToString())));
+                        WriteFile(path, new string(item[item.Length - 1], int.Parse(item.Remove(item.Length - 1).ToString())));
                     }
                     else
                     {
@@ -73,6 +78,17 @@ namespace RunLengthEncoding
             catch (Exception ex)
             {
                 return "Se ha producido un error: " + ex.Message;
+            }
+        }
+
+        public bool CheckFile(string path)
+        {
+            using (var file = new FileStream(path, FileMode.Open))
+            {
+                using (var reader = new BinaryReader(file, ENCODE))
+                {
+                    return reader.ReadChar() == 'R' && reader.ReadChar() == 'L';
+                }
             }
         }
 
@@ -111,6 +127,7 @@ namespace RunLengthEncoding
                 {
                     if (reader.ReadChar() == 'R' && reader.ReadChar() == 'L')
                     {
+                        NAME = reader.ReadString();
                         for (int i = 0; i < reader.BaseStream.Length; i++)
                         {
                             if (reader.BaseStream.Position + 1 < reader.BaseStream.Length)
@@ -128,7 +145,7 @@ namespace RunLengthEncoding
             yield return null;
         }
 
-        private string Stats(string PathOriginalFile, string PathCompFile)
+        public string Stats(string PathOriginalFile, string PathCompFile)
         {
             PathOriginalFile = FixPath(PathOriginalFile);
             PathCompFile = FixPath(PathCompFile);
@@ -179,12 +196,14 @@ namespace RunLengthEncoding
 
         private void SetMark(string name)
         {
-            using (var file = new FileStream(name, FileMode.Append))
+            using (var file = new FileStream(name + EXTENSION, FileMode.Append))
             {
                 using (var writer = new BinaryWriter(file, ENCODE))
                 {
+                    name = name.Split('\\')[name.Split('\\').Length - 1];
                     writer.Write('R');
                     writer.Write('L');
+                    writer.Write(name);
                 }
             }
         }
