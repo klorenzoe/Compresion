@@ -46,7 +46,7 @@ namespace Huffman
         /// </summary>
         /// <param name="OriginalFile"></param>
         /// <returns></returns>
-        private static List<Node> OccurrencePercentage(BinaryReader/*StreamReader*/ OriginalFile, ref string Compressed)
+        private static List<Node> OccurrencePercentage(BinaryReader OriginalFile, ref string Compressed)
         {
             List<Node> PercentageList = new List<Node>();
             float TotalElements = 0f;
@@ -172,17 +172,11 @@ namespace Huffman
         /// </summary>
         /// <param name="Compressed"></param>
         /// <param name="PathDestination"></param>
-        private static int CreateCompressedFile(string Compressed, string PathDestination, string/*Dictionary<string, string>*/ EncodingTable)
+        private static int CreateCompressedFile(string Compressed, string PathDestination, string EncodingTable)
         {
             int length = Compressed.Length/8 + EncodingTable.Length;
-            PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1], "COMPRIMIDO " + /*EncodingTable["Huffman"]*/EncodingTable.Split(new[] { "||" }, StringSplitOptions.None)[1]);
-            Directory.CreateDirectory(PathDestination);
 
-            if (File.Exists(PathDestination))
-            {
-                File.Delete(PathDestination);
-            }
-
+            PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1],"");
             using (FileStream CompressedFile = File.Create(PathDestination + "\\" + EncodingTable.Split(new[] { "||" }, StringSplitOptions.None)[1].Split('.')[0]/* EncodingTable["Huffman"]*/+ ".comp"))
             {
                 using (BinaryWriter CompressedFileBinary = new BinaryWriter(CompressedFile, Encoding.ASCII))
@@ -213,13 +207,13 @@ namespace Huffman
         public static int Compressor(string DestinyPath)
         {
             BinaryReader OriginFile = new BinaryReader(File.Open(DestinyPath, FileMode.Open));
-            string TextToCompress = ""; /*OriginFile.ReadToEnd();*/
+            string TextToCompress = "";
             Dictionary<char, string> ResultEncoding = HuffmanEncoding(OriginFile, ref TextToCompress);
 
             string EncodingTable = "";
             
             OriginFile.BaseStream.Seek(0, SeekOrigin.Begin);
-
+            OriginFile.Dispose();
             foreach (KeyValuePair<char, string> Element in ResultEncoding)
             {
                 EncodingTable += Element.Value + "||" + Element.Key + "||";
@@ -233,7 +227,7 @@ namespace Huffman
             EncodingTable = "length||"+ Compressed.Length+"||" + EncodingTable;
             EncodingTable = "Huffman||" + DestinyPath.Split('\\')[DestinyPath.Split('\\').Length - 1] + "||"+EncodingTable; //It concat the original name, with the key "Huffman"
 
-            return CreateCompressedFile(Compressed, DestinyPath, /*ResultEncoding*/EncodingTable.Remove(EncodingTable.Length - 2, 2)+">>");
+            return CreateCompressedFile(Compressed, DestinyPath, EncodingTable.Remove(EncodingTable.Length - 2, 2)+">>");
         }
 
 
@@ -285,7 +279,7 @@ namespace Huffman
         /// <param name="PathCompress"></param>
         /// <param name="PathEncodingTable"></param>
         /// <returns></returns>
-        private static string DecodeTheFile(string PathCompress, string PathEncodingTable, ref string OriginalName)
+        private static string DecodeTheFile(string PathCompress, ref string OriginalName)
         {
             string Descompressor = "";
             int Seek=0;
@@ -330,17 +324,12 @@ namespace Huffman
         /// This method create a file with the decode result, with the original name, out of the compress directory.
         /// </summary>
         /// <param name="DescompressContent"></param>
-        /// <param name="DirectoryPath"></param>
+        /// <param name="DescompressedPath"></param>
         /// <param name="OriginalName"></param>
-        private static int CreateDecodeFile(string DescompressContent, string DirectoryPath, string OriginalName)
+        private static int CreateDecodeFile(string DescompressContent, string DescompressedPath, string OriginalName)
         {
-            DirectoryPath += "\\"+OriginalName;
-            if (File.Exists(DirectoryPath))
-            {
-                File.Delete(DirectoryPath);
-            }
-
-            using (FileStream DescompressedFile = File.Create(DirectoryPath))
+            DescompressedPath = DescompressedPath.Replace(DescompressedPath.Split('\\')[DescompressedPath.Split('\\').Length-1],"")+OriginalName;
+            using (FileStream DescompressedFile = File.Create(DescompressedPath))
             {
                 Byte[] info = Encoding.GetEncoding("iso-8859-1").GetBytes(DescompressContent);
                 DescompressedFile.Write(info, 0, info.Length);
@@ -354,25 +343,10 @@ namespace Huffman
         /// <param name="PathCompresorFile"></param>
         public static int Descompressor(string PathCompresorFile)
         {
-            DirectoryInfo DirectoryToDescompress = new DirectoryInfo(PathCompresorFile);
-            string PathCompress = "";
-            string PathEncodingTable = "";
             string OriginalName = "";
 
-            foreach (var SpecificFile in DirectoryToDescompress.GetFiles())
-            {
-                if (SpecificFile.Name == "EncodingTable.comp")
-                {
-                    PathEncodingTable = SpecificFile.FullName;
-                }
-                else if (SpecificFile.Name.Split('.')[SpecificFile.Name.Split('.').Length - 1] == "comp")
-                {
-                    PathCompress = SpecificFile.FullName;
-                }
-            }
-
             //It returns the Decompressed length
-            return CreateDecodeFile(DecodeTheFile(PathCompress, PathEncodingTable, ref OriginalName), PathCompresorFile, OriginalName);
+            return CreateDecodeFile(DecodeTheFile(PathCompresorFile, ref OriginalName), PathCompresorFile, OriginalName);
         }
         
 
