@@ -3,25 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
-namespace RLE_DLL
+using RunLengthEncoding;
+namespace RunLengthEnconding_Program
 {
-    //Entiendo que esto va en un proyecto aparte   
-
-
-    //        DLL
-    //	-COMPRIMIR
-    //	-DESCOMPRIMIR
-    //	-RAZON DE COMPRESION
-    //	-FACTOR DE COMPRESION
-    //	-RUN LENGTH
-
-    //APLICACION
-    //	-ABRIR ARCHIVOS
-    //	-LEER CONTENIDO
-    //	-LEER INSTRUCCIONES
-    //	-INTERFAZ
-
     class Program
     {
         static void Main(string[] args)
@@ -72,14 +56,14 @@ namespace RLE_DLL
 
         static public void Comprimir(string entrada)
         {
-            Run_Length run = new Run_Length();
+           RLE run = new RLE();
             Console.Write("Comprimiendo...");
             Console.WriteLine(run.Comprimir(entrada));
         }
 
         static public void Descomprimir(string entrada)
         {
-            Run_Length run = new Run_Length();
+            RLE run = new RLE();
             Console.Write("Descomprimiendo...");
             Console.WriteLine(run.Descomprimir(entrada));
         }
