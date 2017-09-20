@@ -175,9 +175,11 @@ namespace Huffman
         private static int CreateCompressedFile(string Compressed, string PathDestination, string EncodingTable)
         {
             int length = Compressed.Length/8 + EncodingTable.Length;
+            var name = PathDestination.Split('\\');
+            name[name.Length - 1] = name[name.Length - 1].Split('.')[0] + ".comp";
+            string salida = string.Join("\\", name);
 
-            PathDestination = PathDestination.Replace(PathDestination.Split('\\')[PathDestination.Split('\\').Length - 1],"");
-            using (FileStream CompressedFile = File.Create(PathDestination + "\\" + EncodingTable.Split(new[] { "||" }, StringSplitOptions.None)[1].Split('.')[0]/* EncodingTable["Huffman"]*/+ ".comp"))
+            using (FileStream CompressedFile = File.Create(salida))
             {
                 using (BinaryWriter CompressedFileBinary = new BinaryWriter(CompressedFile, Encoding.ASCII))
                 {

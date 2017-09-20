@@ -17,7 +17,7 @@ namespace MixEncoding_Program
                 string[] entrada = Console.ReadLine().Split(' ');
                 if (entrada[0] == "--ayuda")
                 {
-                    Console.WriteLine("-h Comprime un archivo usando Huffman.\n-r Comprime un archivo usando RLE. \n-d Descomprime un archivo comprimido por RLE o por Huffman.\n-f Indica la ruta del archivo a comprimir o descomprimir.\n--ayuda  Muestra este mensaje.");
+                    Console.WriteLine("-h Comprime un archivo usando Huffman.\n-r Comprime un archivo usando RLE. \n-d Descomprime un archivo comprimido por RLE o por Huffman.\n-f Indica la ruta del archivo a comprimir o descomprimir.\n--ayuda  Muestra este mensaje.\nEjemplo: -h -f archivo.txt -> Comprime un archivo de texto usando Huffman.");
                 }
                 else if (entrada.Length < 3)
                 {
@@ -34,7 +34,7 @@ namespace MixEncoding_Program
                             }
                             else
                             {
-                                Console.WriteLine("Se esperaba -f\nEscriba --ayuda para obtener ayuda");
+                                Console.WriteLine("Se esperaba -f en lugar de: " + entrada[0] + "\nEscriba --ayuda para obtener ayuda");
                             }
                             break;
                         case "-r":
@@ -44,7 +44,7 @@ namespace MixEncoding_Program
                             }
                             else
                             {
-                                Console.WriteLine("Se esperaba -f\nEscriba --ayuda para obtener ayuda");
+                                Console.WriteLine("Se esperaba -f en lugar de: " + entrada[0] + "\nEscriba --ayuda para obtener ayuda");
                             }
                             break;
                         case "-d":
@@ -54,11 +54,11 @@ namespace MixEncoding_Program
                             }
                             else
                             {
-                                Console.WriteLine("Se esperaba -f\nEscriba --ayuda para obtener ayuda");
+                                Console.WriteLine("Se esperaba -f en lugar de: " + entrada[0] + "\nEscriba --ayuda para obtener ayuda");
                             }
                             break;
                         default:
-                            Console.WriteLine("Comando no válido.\nEscriba --ayuda para obtener ayuda");
+                            Console.WriteLine("Comando no válido: "+ entrada[0] +"\nEscriba --ayuda para obtener ayuda");
                             break;
                     }
                 }
@@ -68,15 +68,20 @@ namespace MixEncoding_Program
         static public void ComprimirRLE(string entrada)
         {
             RLE run = new RLE();
-            Console.Write("Comprimiendo con RLE...");
+            Console.WriteLine("Comprimiendo con RLE...");
             Console.WriteLine(run.Comprimir(entrada));
         }
 
         static public void ComprimirHuffman(string entrada)
         {
-            Console.Write("Comprimiendo con Huffman...");
+            Console.WriteLine("Comprimiendo con Huffman...");
             Huffman.Compressor(entrada);
-            Console.Write("Compresión finalizada.");
+            RLE run = new RLE();
+            var name = entrada.Split('\\');
+            name[name.Length - 1] = name[name.Length -1 ].Split('.')[0] + ".comp";
+            string salida = string.Join("\\", name);
+
+            Console.WriteLine("Compresión completa en archivo: " + salida + "\n" + run.Stats(entrada, salida));
         }
 
         static public void Descomprimir(string entrada)
@@ -85,13 +90,14 @@ namespace MixEncoding_Program
 
             if (run.CheckFile(entrada))
             {
-                Console.Write("Descomprimiendo...");
+                Console.WriteLine("Descomprimiendo...");
                 Console.WriteLine(run.Descomprimir(entrada));
             }
             else
             {
-                Console.Write("Descomprimiendo...");
+                Console.WriteLine("Descomprimiendo...");
                 Huffman.Descompressor(entrada);
+                Console.WriteLine("Descompresion completa.");
             }
         }
     }
